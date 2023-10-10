@@ -52,4 +52,4 @@ If you don't know how to get the cookie and the x-ig-app-id, here are the steps 
 4. Go to request headers and search for the cookie, triple click the value (mid=...) and copy it.
 
 
-5. To get the x-ig-app-id scroll down until you find it (its a number with aproximately 15 digits).
+5. To get the x-ig-app-id scroll down until you find it (its a number with approximately 15 digits).
