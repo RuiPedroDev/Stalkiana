@@ -33,3 +33,18 @@ A simple command-line tool for interacting with Instagram using the Instagram AP
     ```shell
     dotnet run stalkiana.cs
     ```
+
+## Information
+
+This tool requires the instagram cookie and x-ig-app-id in order to work.
+If you don't know how to get the cookie and the x-ig-app-id, here are the steps to do it:
+
+1. Launch your browser and log in to Instagram
+
+2. Go to inspect element (CTRL + SHIFT + C or F12)
+
+3. Go to the network tab and search for the request "graphql" and click on any of the requests
+
+4. Go to request headers and search for the cookie, triple click the value (mid=...) and copy it
+
+5. To get the x-ig-app-id scroll down until you find it (its a number with aproximately 15 digits)
