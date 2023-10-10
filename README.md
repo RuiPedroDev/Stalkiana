@@ -1,6 +1,12 @@
-# Stalkiana
+#  _________  __           .__    __    .__                         
+# /   _____/_/  |_ _____   |  |  |  | __|__|_____     ____  _____   
+# \_____  \ \   __\\__  \  |  |  |  |/ /|  |\__  \   /    \ \__  \  
+# /        \ |  |   / __ \_|  |__|    < |  | / __ \_|   |  \ / __ \_
+#/_______  / |__|  (____  /|____/|__|_ \|__|(____  /|___|  /(____  /
+#        \/             \/            \/         \/      \/      \/ 
 
-A simple command-line tool for interacting with Instagram using the Instagram API. This tool allows you to perform various actions on Instagram, from the command line.
+
+A simple command-line tool for tracking the followers of an instagram account.
 
 **Note**: Please be aware that using this tool is against Instagram's terms of service. Use it responsibly and at your own risk.
 
@@ -8,6 +14,8 @@ A simple command-line tool for interacting with Instagram using the Instagram AP
 
 - Get a list of followings and followers from a user;
 - Save and log if the user's following/follower count has changed;
+- Check who stopped/started following the user
+- Check who the user stopped/started following
 
 ## Prerequisites
 
@@ -35,6 +43,8 @@ A simple command-line tool for interacting with Instagram using the Instagram AP
     ```
 
 ## Information and Usage
+
+This tool works by keeping a local list of the followers/followings of an instagram user and then upon execution check if the follower/following count has changed compared to the last execution time, if it changed it determines the difference by comparing the new list with the old list, when the tool finishes execution, it logs the results into a results.txt file.
 
 This tool requires the instagram cookie and x-ig-app-id in order to work.
 If you don't know how to get the cookie and the x-ig-app-id, here are the steps to do it:
