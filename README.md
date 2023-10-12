@@ -15,8 +15,8 @@ A simple command-line tool for tracking the followers of an instagram account.
 
 - Get a list of followings and followers from a user;
 - Save and log if the user's following/follower count has changed;
-- Check who stopped/started following the user
-- Check who the user stopped/started following
+- Check who stopped/started following the user;
+- Check who the user stopped/started following;
 
 ## Prerequisites
 
