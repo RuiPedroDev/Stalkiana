@@ -1,6 +1,7 @@
 *.vs
 *.user
 *.cache
+*.sln
 bin/
 obj/
 .vscode/
