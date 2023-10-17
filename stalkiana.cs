@@ -4,6 +4,7 @@ Do not use the tool multiple times per day (max 10 times) or you might be flagge
 
 */
 
+using System;
 using RestSharp;
 using Newtonsoft.Json;
 
@@ -11,6 +12,7 @@ namespace Stalkiana_Console
 {
     internal class Program
     {
+        public static RestClient client = new RestClient("https://www.instagram.com");
         static void Main(string[] args)
         {
             Console.Clear();
@@ -24,13 +26,24 @@ namespace Stalkiana_Console
 /_______  / |__|  (____  /|____/|__|_ \|__|(____  /|___|  /(____  /
         \/             \/            \/         \/      \/      \/ ");
             Console.ResetColor();
-            Console.Write("\nThis tool is used to stalk the follower count of a user\nIt works by keeping track of the list of followers/following accounts and then comparing with the last save.\n");
-            Console.WriteLine("\nThis tool only works on public instagram accounts or in private accounts that you are following");
+            Console.Write("\nThis is a tool used for stalking an instagram user\n");
             int minTime = 4000;
             int maxTime = 6000;
             var rand = new Random();
             Console.Write("\nPlease input the username to stalk: ");
             string username = Console.ReadLine()!;
+            string input;
+            do{
+                Console.WriteLine("\n1- Download Profile Picture");
+                Console.WriteLine("2- Get Followers/Following\n");
+                Console.Write("\nChoose what you want to do: ");
+                input = Console.ReadLine()!;
+            }while(input != "1" && input != "2");
+            if(input == "1"){
+                downloadProfileImage(username);
+                return;
+            }
+            Console.WriteLine("\nThis only works on public instagram accounts or in private accounts that you are following\n\n");
             Console.Write("\nPlease input the full instagram cookie: ");
             string cookie = Console.ReadLine()!;
             Console.Write("\nPlease input the x-ig-app-id: ");
@@ -38,7 +51,6 @@ namespace Stalkiana_Console
             string followingsFileName = $"{username}_followings.txt";
             string followersFileName = $"{username}_followers.txt";
             string resultFileName = "result.txt";
-            var client = new RestClient("https://www.instagram.com");
             string userId;
 
             int pos;
@@ -233,6 +245,28 @@ namespace Stalkiana_Console
             }
             File.AppendAllLines(resultFileName, resultLines);
             Console.WriteLine("\nFinished successfully, results saved in ./results.txt");
+        }
+        static void downloadProfileImage(string username){
+            var request1 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
+            request1.AddQueryParameter("username", username);
+            request1.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var response1 = client.Execute(request1);
+
+            if(response1.IsSuccessful){
+                Console.WriteLine("\nFirst request completed succesfully\n");
+            }else{ Console.WriteLine("Error in request2"); return; }
+
+            dynamic? obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
+            RestClient restClient = new RestClient();
+            var request2 = new RestRequest(obj1.data.user.profile_pic_url_hd.ToString(), Method.Get);
+            var fileBytes = restClient.DownloadData(request2);
+            File.WriteAllBytes($"{username}_profileImage.jpg", fileBytes!);
+            if(fileBytes != null && File.Exists($"{username}_profileImage.jpg")){
+                Console.WriteLine("The profile picture was succesfully saved in the same folder as the console app");
+            }else{
+                Console.WriteLine("There was an error getting the profile picture");
+            }
+            return;
         }
     }
 }
