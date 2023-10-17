@@ -71,8 +71,7 @@ namespace Stalkiana_Console
             //get the follower and following count of the user
             var request2 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
             request2.AddQueryParameter("username", username);
-            request2.AddHeader("cookie", cookie);
-            request2.AddHeader("x-ig-app-id", app_id);
+            request2.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
             var response2 = client.Execute(request2);
             Thread.Sleep(rand.Next(minTime, maxTime));
 
