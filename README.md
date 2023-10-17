@@ -17,7 +17,7 @@ A simple command-line tool for stalking an instagram account.
 - Save and log if the user's following/follower count has changed;
 - Check who stopped/started following the user;
 - Check who the user stopped/started following;
-- Download instagram profile pictures;
+- Download profile pictures from a given public or private user;
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ A simple command-line tool for stalking an instagram account.
 
 ## Information and Usage
 
-This tool has main functions:
+This tool has two main functions:
 
 1- Downloading a profile picture (this works in both public and private instagram accounts).
 
