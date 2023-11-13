@@ -48,9 +48,9 @@ namespace Stalkiana_Console
             string cookie = Console.ReadLine()!;
             Console.Write("\nPlease input the x-ig-app-id: ");
             string app_id = Console.ReadLine()!;
-            string followingsFileName = $"{username}_followings.txt";
-            string followersFileName = $"{username}_followers.txt";
-            string resultFileName = "result.txt";
+            string followingsFileName = $"{username}\\{username}_followings.txt";
+            string followersFileName = $"{username}\\{username}_followers.txt";
+            string resultFileName = $"{username}\\result.txt";
             string userId;
 
             int pos;
@@ -159,8 +159,11 @@ namespace Stalkiana_Console
             }
 
             Console.WriteLine();
-            client.Dispose();
+            client.Dispose();   
 
+            Directory.CreateDirectory(username);
+            Directory.CreateDirectory(username);
+            
             //save the lists to the file
             File.WriteAllLines(followingsFileName, usersFollowing);
             File.WriteAllLines(followersFileName, usersFollowers);
@@ -244,7 +247,7 @@ namespace Stalkiana_Console
                 }
             }
             File.AppendAllLines(resultFileName, resultLines);
-            Console.WriteLine("\nFinished successfully, results saved in ./results.txt");
+            Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
         }
         static void downloadProfileImage(string username){
             var request1 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);

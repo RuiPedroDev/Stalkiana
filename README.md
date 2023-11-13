@@ -18,6 +18,7 @@ A simple command-line tool for stalking an instagram account.
 - Check who stopped/started following the user;
 - Check who the user stopped/started following;
 - Download profile pictures from a given public or private user;
+- Track multiple users at once with logs saved in different directories
 
 ## Prerequisites
 
