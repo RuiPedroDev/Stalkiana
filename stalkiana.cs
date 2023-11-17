@@ -70,8 +70,8 @@ namespace Stalkiana_Console
             request1.AddQueryParameter("search_surface", "web_top_search");
             var response1 = client.Execute(request1);
             if(response1.IsSuccessful){
-                Console.WriteLine("First request completed succesfully");
-            }else{ Console.WriteLine("Error in request1 (maybe cookie is not correct)"); return; }
+                Console.WriteLine("\nFirst request completed succesfully");
+            }else{ Console.WriteLine($"Error in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
 
             Thread.Sleep(rand.Next(minTime, maxTime));
 
@@ -84,7 +84,7 @@ namespace Stalkiana_Console
 
             if(response2.IsSuccessful){
                 Console.WriteLine("Second request completed succesfully\n");
-            }else{ Console.WriteLine("Error in request2"); return; }
+            }else{ Console.WriteLine($"Error in request2: {response2.StatusCode}"); return; }
 
             if (File.Exists(followingsFileName) && File.Exists(followersFileName))
             {
@@ -102,7 +102,7 @@ namespace Stalkiana_Console
                 Console.WriteLine($"{username}: {userId}\n");
                 Console.WriteLine($"Previous follower count: {usersFollowersFile.Count}, previous following count: {usersFollowingFile.Count}");
                 Console.WriteLine($"Current follower count:  {followerCount}, current following count:  {followingCount}\n");
-                Thread.Sleep(rand.Next(minTime, maxTime));
+                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
             }
             catch (Exception e)
             {
@@ -137,10 +137,10 @@ namespace Stalkiana_Console
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {response3.StatusCode}");
+                    Console.WriteLine($"Error in fetching followings: {response3.StatusCode}");
                     return;
                 }
-                Thread.Sleep(rand.Next(minTime, maxTime));
+                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
             }
 
             Console.WriteLine("Getting Followers...");
@@ -170,10 +170,10 @@ namespace Stalkiana_Console
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {response3.StatusCode}");
+                    Console.WriteLine($"Error in fetching followers: {response3.StatusCode}");
                     return;
                 }
-                Thread.Sleep(rand.Next(minTime, maxTime));
+                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
             }
 
             Console.WriteLine();
