@@ -268,15 +268,16 @@ namespace Stalkiana_Console
 
             if(response1.IsSuccessful){
                 Console.WriteLine("\nFirst request completed succesfully\n");
-            }else{ Console.WriteLine("Error in request2"); return; }
+            }else{ Console.WriteLine($"Error in request1: {response1.StatusCode}"); return; }
 
             dynamic? obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
             RestClient restClient = new RestClient();
             var request2 = new RestRequest(obj1.data.user.profile_pic_url_hd.ToString(), Method.Get);
             var fileBytes = restClient.DownloadData(request2);
-            File.WriteAllBytes($"{username}_profileImage.jpg", fileBytes!);
-            if(fileBytes != null && File.Exists($"{username}_profileImage.jpg")){
-                Console.WriteLine("The profile picture was succesfully saved in the same folder as the console app");
+            Directory.CreateDirectory(username);
+            File.WriteAllBytes($"{username}/{username}_profileImage.jpg", fileBytes!);
+            if(fileBytes != null && File.Exists($"{username}/{username}_profileImage.jpg")){
+                Console.WriteLine($"The profile picture was succesfully saved in ./{username}/{username}_profileImage.jpg");
             }else{
                 Console.WriteLine("There was an error getting the profile picture");
             }
