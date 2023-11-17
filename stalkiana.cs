@@ -27,8 +27,8 @@ namespace Stalkiana_Console
         \/             \/            \/         \/      \/      \/ ");
             Console.ResetColor();
             Console.Write("\nThis is a tool used for stalking an instagram user\n");
-            int minTime = 4000;
-            int maxTime = 6000;
+            int minTime = 1000;
+            int maxTime = 2000;
             var rand = new Random();
             Console.Write("\nPlease input the username to stalk: ");
             string username = Console.ReadLine()!;
@@ -48,13 +48,10 @@ namespace Stalkiana_Console
             string cookie = Console.ReadLine()!;
             Console.Write("\nPlease input the x-ig-app-id: ");
             string app_id = Console.ReadLine()!;
-            string followingsFileName = $"{username}\\{username}_followings.txt";
-            string followersFileName = $"{username}\\{username}_followers.txt";
-            string resultFileName = $"{username}\\result.txt";
+            string followingsFileName = $"{username}/{username}_followings.txt";
+            string followersFileName = $"{username}/{username}_followers.txt";
+            string resultFileName = $"{username}/result.txt";
             string userId;
-
-            int pos;
-            int increment = 100;
 
             int followerCount;
             int followingCount;
@@ -118,20 +115,33 @@ namespace Stalkiana_Console
             Console.WriteLine("Getting Following...");
 
             //get the list of all the following
-            for (pos = 0; pos < followingCount; pos += increment)
-            {
-                var request3 = new RestRequest($"/api/v1/friendships/{userId}/following/");
-                request3.AddQueryParameter("count", increment);
-                request3.AddQueryParameter("max_id", pos);
+            bool has_next = true;
+            string? after = null!;
+            while(has_next){
+                var request3 = new RestRequest("/graphql/query/", Method.Get);
+                request3.AddQueryParameter("query_hash", "d04b0a864b4b54837c0d870b0e77e076");
+                request3.AddQueryParameter("id", userId);
+                request3.AddQueryParameter("include_reel", "true");
+                request3.AddQueryParameter("fetch_mutual", "true");
+                request3.AddQueryParameter("first", "50");
+                request3.AddQueryParameter("after", after);
                 request3.AddHeader("cookie", cookie);
                 request3.AddHeader("x-ig-app-id", app_id);
                 var response3 = client.Execute(request3);
-                if (!response3.IsSuccessStatusCode) { Console.WriteLine("Error in request3 following"); return; }
-                dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!)!;
-                int userCount = obj3.users.Count;
-                for (int i = 0; i < userCount; i++)
+                if (response3.IsSuccessful)
                 {
-                    usersFollowing.Add((string)obj3.users[i].username);
+                    dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!);
+                    has_next = obj3!.data.user.edge_follow.page_info.has_next_page;
+                    after = obj3.data.user.edge_follow.page_info.end_cursor;
+                    foreach (dynamic following in obj3.data.user.edge_follow.edges)
+                    {
+                        usersFollowing.Add((string)following.node.username);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error: {response3.ErrorMessage}");
+                    break;
                 }
                 Thread.Sleep(rand.Next(minTime, maxTime));
             }
@@ -139,21 +149,33 @@ namespace Stalkiana_Console
             Console.WriteLine("Getting Followers...");
 
             //get list of all the followers
-            for (pos = 0; pos < followerCount; pos += increment)
-            {
-                var request3 = new RestRequest($"/api/v1/friendships/{userId}/followers/");
-                request3.AddQueryParameter("count", increment);
-                request3.AddQueryParameter("max_id", pos);
-                request3.AddQueryParameter("search_surface", "follow_list_page");
+            has_next = true;
+            after = null!;
+            while(has_next){
+                var request3 = new RestRequest("/graphql/query/", Method.Get);
+                request3.AddQueryParameter("query_hash", "c76146de99bb02f6415203be841dd25a");
+                request3.AddQueryParameter("id", userId);
+                request3.AddQueryParameter("include_reel", "true");
+                request3.AddQueryParameter("fetch_mutual", "true");
+                request3.AddQueryParameter("first", "50");
+                request3.AddQueryParameter("after", after);
                 request3.AddHeader("cookie", cookie);
                 request3.AddHeader("x-ig-app-id", app_id);
                 var response3 = client.Execute(request3);
-                if (!response3.IsSuccessStatusCode) { Console.WriteLine("Error in request3 followers"); return; }
-                dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!)!;
-                int userCount = obj3.users.Count;
-                for (int i = 0; i < userCount; i++)
+                if (response3.IsSuccessful)
                 {
-                    usersFollowers.Add((string)obj3.users[i].username);
+                    dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!);
+                    has_next = obj3!.data.user.edge_followed_by.page_info.has_next_page;
+                    after = obj3.data.user.edge_followed_by.page_info.end_cursor;
+                    foreach (dynamic follower in obj3.data.user.edge_followed_by.edges)
+                    {
+                        usersFollowers.Add((string)follower.node.username);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Error: {response3.ErrorMessage}");
+                    break;
                 }
                 Thread.Sleep(rand.Next(minTime, maxTime));
             }
@@ -162,23 +184,10 @@ namespace Stalkiana_Console
             client.Dispose();   
 
             Directory.CreateDirectory(username);
-            Directory.CreateDirectory(username);
             
             //save the lists to the file
             File.WriteAllLines(followingsFileName, usersFollowing);
             File.WriteAllLines(followersFileName, usersFollowers);
-
-            Console.WriteLine("Following:\n");
-            for (int i = 0; i < usersFollowing.Count; i++)
-            {
-                Console.WriteLine($"{usersFollowing[i]}");
-            }
-            Console.WriteLine("\n\nFollowers:\n");
-            for (int i = 0; i < usersFollowers.Count; i++)
-            {
-                Console.WriteLine($"{usersFollowers[i]}");
-            }
-
 
             Console.WriteLine("\n\nVerifying...\n");
 
@@ -201,7 +210,7 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else
+            else if(usersFollowingFile.Count > usersFollowing.Count)
             {
                 Console.WriteLine($"{username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users\n");
                 resultLines.Add($"{DateTime.Now}: {username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
@@ -213,6 +222,9 @@ namespace Stalkiana_Console
                         resultLines.Add($"{user}, ");
                     }
                 }
+            }else{
+                Console.WriteLine("Something went wrong.");
+                return;
             }
 
             if (usersFollowersFile.Count == usersFollowers.Count)
@@ -233,7 +245,7 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else
+            else if(usersFollowersFile.Count > usersFollowers.Count)
             {
                 Console.WriteLine($"{usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}\n");
                 resultLines.Add($"{DateTime.Now}: {usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
@@ -245,6 +257,9 @@ namespace Stalkiana_Console
                         resultLines.Add($"{user}, ");
                     }
                 }
+            }else{
+                Console.WriteLine("Something went wrong.");
+                return;
             }
             File.AppendAllLines(resultFileName, resultLines);
             Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
