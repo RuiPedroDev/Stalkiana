@@ -46,8 +46,6 @@ namespace Stalkiana_Console
             Console.WriteLine("\nThis only works on public instagram accounts or in private accounts that you are following\n\n");
             Console.Write("\nPlease input the full instagram cookie: ");
             string cookie = Console.ReadLine()!;
-            Console.Write("\nPlease input the x-ig-app-id: ");
-            string app_id = Console.ReadLine()!;
             string followingsFileName = $"{username}/{username}_followings.txt";
             string followersFileName = $"{username}/{username}_followers.txt";
             string resultFileName = $"{username}/result.txt";
@@ -126,7 +124,6 @@ namespace Stalkiana_Console
                 request3.AddQueryParameter("first", "50");
                 request3.AddQueryParameter("after", after);
                 request3.AddHeader("cookie", cookie);
-                request3.AddHeader("x-ig-app-id", app_id);
                 var response3 = client.Execute(request3);
                 if (response3.IsSuccessful)
                 {
@@ -140,8 +137,8 @@ namespace Stalkiana_Console
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {response3.ErrorMessage}");
-                    break;
+                    Console.WriteLine($"Error: {response3.StatusCode}");
+                    return;
                 }
                 Thread.Sleep(rand.Next(minTime, maxTime));
             }
@@ -160,7 +157,6 @@ namespace Stalkiana_Console
                 request3.AddQueryParameter("first", "50");
                 request3.AddQueryParameter("after", after);
                 request3.AddHeader("cookie", cookie);
-                request3.AddHeader("x-ig-app-id", app_id);
                 var response3 = client.Execute(request3);
                 if (response3.IsSuccessful)
                 {
@@ -174,8 +170,8 @@ namespace Stalkiana_Console
                 }
                 else
                 {
-                    Console.WriteLine($"Error: {response3.ErrorMessage}");
-                    break;
+                    Console.WriteLine($"Error: {response3.StatusCode}");
+                    return;
                 }
                 Thread.Sleep(rand.Next(minTime, maxTime));
             }
