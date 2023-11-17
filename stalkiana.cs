@@ -44,7 +44,7 @@ namespace Stalkiana_Console
                 return;
             }
             Console.WriteLine("\nThis only works on public instagram accounts or in private accounts that you are following\n\n");
-            Console.Write("\nPlease input the full instagram cookie: ");
+            Console.Write("Please input the full instagram cookie: ");
             string cookie = Console.ReadLine()!;
             string followingsFileName = $"{username}/{username}_followings.txt";
             string followersFileName = $"{username}/{username}_followers.txt";
@@ -71,7 +71,7 @@ namespace Stalkiana_Console
             var response1 = client.Execute(request1);
             if(response1.IsSuccessful){
                 Console.WriteLine("\nFirst request completed succesfully");
-            }else{ Console.WriteLine($"Error in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
+            }else{ Console.WriteLine($"\nError in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
 
             Thread.Sleep(rand.Next(minTime, maxTime));
 
