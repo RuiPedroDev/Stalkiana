@@ -215,7 +215,7 @@ namespace Stalkiana_Console
                     if (!usersFollowingFile.Contains(user))
                     {
                         Console.WriteLine(user);
-                        resultLines.Add($"{user},");
+                        resultLines.Add($"{user}");
                     }
                 }
             }
@@ -228,7 +228,7 @@ namespace Stalkiana_Console
                     if (!usersFollowing.Contains(user))
                     {
                         Console.WriteLine(user);
-                        resultLines.Add($"{user},");
+                        resultLines.Add($"{user}");
                     }
                 }
             }else{
@@ -263,7 +263,7 @@ namespace Stalkiana_Console
                     if (!usersFollowersFile.Contains(user))
                     {
                         Console.WriteLine(user);
-                        resultLines.Add($"{user},");
+                        resultLines.Add($"{user}");
                     }
                 }
             }
@@ -276,7 +276,7 @@ namespace Stalkiana_Console
                     if (!usersFollowers.Contains(user))
                     {
                         Console.WriteLine(user);
-                        resultLines.Add($"{user},");
+                        resultLines.Add($"{user}");
                     }
                 }
             }else{
