@@ -33,13 +33,15 @@ namespace Stalkiana_Console
             Console.Write("\nPlease input the username to stalk: ");
             string username = Console.ReadLine()!;
             string input;
-            do{
+            do
+            {
                 Console.WriteLine("\n1- Download Profile Picture");
                 Console.WriteLine("2- Get Followers/Following\n");
                 Console.Write("\nChoose what you want to do: ");
                 input = Console.ReadLine()!;
-            }while(input != "1" && input != "2");
-            if(input == "1"){
+            } while (input != "1" && input != "2");
+            if (input == "1")
+            {
                 downloadProfileImage(username);
                 return;
             }
@@ -69,9 +71,11 @@ namespace Stalkiana_Console
             request1.AddQueryParameter("include_reel", "false");
             request1.AddQueryParameter("search_surface", "web_top_search");
             var response1 = client.Execute(request1);
-            if(response1.IsSuccessful){
+            if (response1.IsSuccessful)
+            {
                 Console.WriteLine("\nFirst request completed succesfully");
-            }else{ Console.WriteLine($"\nError in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
+            }
+            else { Console.WriteLine($"\nError in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
 
             Thread.Sleep(rand.Next(minTime, maxTime));
 
@@ -82,9 +86,11 @@ namespace Stalkiana_Console
             var response2 = client.Execute(request2);
             Thread.Sleep(rand.Next(minTime, maxTime));
 
-            if(response2.IsSuccessful){
+            if (response2.IsSuccessful)
+            {
                 Console.WriteLine("Second request completed succesfully\n");
-            }else{ Console.WriteLine($"Error in request2: {response2.StatusCode}"); return; }
+            }
+            else { Console.WriteLine($"Error in request2: {response2.StatusCode}"); return; }
 
             if (File.Exists(followingsFileName) && File.Exists(followersFileName))
             {
@@ -106,7 +112,7 @@ namespace Stalkiana_Console
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e}");
+                Console.WriteLine($"Error: {e.Message}");
                 return;
             }
 
@@ -115,7 +121,8 @@ namespace Stalkiana_Console
             //get the list of all the following
             bool has_next = true;
             string? after = null!;
-            while(has_next){
+            while (has_next)
+            {
                 var request3 = new RestRequest("/graphql/query/", Method.Get);
                 request3.AddQueryParameter("query_hash", "d04b0a864b4b54837c0d870b0e77e076");
                 request3.AddQueryParameter("id", userId);
@@ -148,7 +155,8 @@ namespace Stalkiana_Console
             //get list of all the followers
             has_next = true;
             after = null!;
-            while(has_next){
+            while (has_next)
+            {
                 var request3 = new RestRequest("/graphql/query/", Method.Get);
                 request3.AddQueryParameter("query_hash", "c76146de99bb02f6415203be841dd25a");
                 request3.AddQueryParameter("id", userId);
@@ -177,10 +185,10 @@ namespace Stalkiana_Console
             }
 
             Console.WriteLine();
-            client.Dispose();   
+            client.Dispose();
 
             Directory.CreateDirectory(username);
-            
+
             //save the lists to the file
             File.WriteAllLines(followingsFileName, usersFollowing);
             File.WriteAllLines(followersFileName, usersFollowers);
@@ -196,12 +204,14 @@ namespace Stalkiana_Console
                 var notList1 = usersFollowing.Except(usersFollowingFile);
                 var notList2 = usersFollowingFile.Except(usersFollowing);
 
-                if(notList1.Count() != notList2.Count()){
+                if (notList1.Count() != notList2.Count())
+                {
                     Console.WriteLine("Something went wrong.");
                     return;
                 }
 
-                for(int i = 0; i < notList1.Count(); i++){
+                for (int i = 0; i < notList1.Count(); i++)
+                {
                     Console.WriteLine($"{username} stopped following {notList2.ElementAt(i)} and started following {notList1.ElementAt(i)},");
                     resultLines.Add($"{username} stopped following {notList2.ElementAt(i)} and started following {notList1.ElementAt(i)},");
                 }
@@ -219,7 +229,7 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else if(usersFollowingFile.Count > usersFollowing.Count)
+            else if (usersFollowingFile.Count > usersFollowing.Count)
             {
                 Console.WriteLine($"{username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
                 resultLines.Add($"{DateTime.Now}: {username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
@@ -231,7 +241,9 @@ namespace Stalkiana_Console
                         resultLines.Add($"{user}");
                     }
                 }
-            }else{
+            }
+            else
+            {
                 Console.WriteLine("Something went wrong.");
                 return;
             }
@@ -244,12 +256,14 @@ namespace Stalkiana_Console
                 var notList1 = usersFollowers.Except(usersFollowersFile);
                 var notList2 = usersFollowersFile.Except(usersFollowers);
 
-                if(notList1.Count() != notList2.Count()){
+                if (notList1.Count() != notList2.Count())
+                {
                     Console.WriteLine("Something went wrong.");
                     return;
                 }
 
-                for(int i = 0; i < notList1.Count(); i++){
+                for (int i = 0; i < notList1.Count(); i++)
+                {
                     Console.WriteLine($"{notList2.ElementAt(i)} stopped following {username} and {notList1.ElementAt(i)} started following {username},");
                     resultLines.Add($"{notList2.ElementAt(i)} stopped following {username} and {notList1.ElementAt(i)} started following {username},");
                 }
@@ -267,7 +281,7 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else if(usersFollowersFile.Count > usersFollowers.Count)
+            else if (usersFollowersFile.Count > usersFollowers.Count)
             {
                 Console.WriteLine($"\n{usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
                 resultLines.Add($"{DateTime.Now}: {usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
@@ -279,35 +293,70 @@ namespace Stalkiana_Console
                         resultLines.Add($"{user}");
                     }
                 }
-            }else{
+            }
+            else
+            {
                 Console.WriteLine("Something went wrong.");
                 return;
             }
             File.AppendAllLines(resultFileName, resultLines);
             Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
         }
-        static void downloadProfileImage(string username){
+
+        static void downloadProfileImage(string username)
+        {
             var request1 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
             request1.AddQueryParameter("username", username);
             request1.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
             var response1 = client.Execute(request1);
-
-            if(response1.IsSuccessful){
-                Console.WriteLine("\nFirst request completed succesfully\n");
-            }else{ Console.WriteLine($"Error in request1: {response1.StatusCode}"); return; }
-
-            dynamic? obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
-            RestClient restClient = new RestClient();
-            var request2 = new RestRequest(obj1.data.user.profile_pic_url_hd.ToString(), Method.Get);
-            var fileBytes = restClient.DownloadData(request2);
-            Directory.CreateDirectory(username);
-            File.WriteAllBytes($"{username}/{username}_profileImage.jpg", fileBytes!);
-            if(fileBytes != null && File.Exists($"{username}/{username}_profileImage.jpg")){
-                Console.WriteLine($"The profile picture was succesfully saved in ./{username}/{username}_profileImage.jpg");
-            }else{
-                Console.WriteLine("There was an error getting the profile picture");
+            if (!response1.IsSuccessful)
+            {
+                Console.WriteLine($"Error in request1: {response1.StatusCode}");
+                return;
             }
-            return;
+            try
+            {
+                dynamic obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
+                string imageUrl = obj1.data.user.profile_pic_url_hd.ToString();
+                byte[] fileBytes = client.DownloadData(new RestRequest(imageUrl, Method.Get))!;
+
+                string? filePath = GenerateNewFileName($"{username}/{username}_profileImage.jpg", fileBytes);
+                if (filePath != null)
+                {
+                    Console.WriteLine($"\nThe profile picture was successfully saved in ./{filePath}");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+                return;
+            }
+        }
+
+        static string? GenerateNewFileName(string fullFilePath, byte[] newFileContent)
+        {
+            int counter = 1;
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fullFilePath);
+            string fileExtension = Path.GetExtension(fullFilePath);
+            string directoryPath = Path.GetDirectoryName(fullFilePath)!;
+
+            fullFilePath = Path.Combine(directoryPath, $"{fileNameWithoutExtension}({counter}){fileExtension}");
+
+            while (File.Exists(fullFilePath))
+            {
+                byte[] existingFileContent = File.ReadAllBytes(fullFilePath);
+
+                if (existingFileContent.SequenceEqual(newFileContent))
+                {
+                    Console.WriteLine("\nThe profile picture is unchanged. No new file created.");
+                    return null;
+                }
+
+                fullFilePath = Path.Combine(directoryPath, $"{fileNameWithoutExtension}({++counter}){fileExtension}");
+            }
+
+            File.WriteAllBytes(fullFilePath, newFileContent);
+            return fullFilePath;
         }
     }
 }
