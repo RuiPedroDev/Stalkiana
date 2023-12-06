@@ -320,6 +320,7 @@ namespace Stalkiana_Console
                 string imageUrl = obj1.data.user.profile_pic_url_hd.ToString();
                 byte[] fileBytes = client.DownloadData(new RestRequest(imageUrl, Method.Get))!;
 
+                Directory.CreateDirectory(username);
                 string? filePath = GenerateNewFileName($"{username}/{username}_profileImage.jpg", fileBytes);
                 if (filePath != null)
                 {
