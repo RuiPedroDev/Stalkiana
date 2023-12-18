@@ -193,13 +193,17 @@ namespace Stalkiana_Console
             File.WriteAllLines(followingsFileName, usersFollowing);
             File.WriteAllLines(followersFileName, usersFollowers);
 
-            Console.WriteLine("\n\nVerifying...\n");
+            Console.WriteLine("\nVerifying...\n");
 
+            if(usersFollowers.Count != followerCount || usersFollowing.Count != followingCount){
+                Console.WriteLine("Something went wrong.");
+                return;
+            }
 
-            if (usersFollowingFile.Count == usersFollowing.Count)
+            if (usersFollowingFile.Count == followingCount)
             {
                 Console.WriteLine($"{username} has the same number of followings");
-                resultLines.Add($"{DateTime.Now}: {username} has the same number of followings");
+                resultLines.Add($"{DateTime.Now}: {username} has the same number of followings: {followingCount}");
 
                 var notList1 = usersFollowing.Except(usersFollowingFile);
                 var notList2 = usersFollowingFile.Except(usersFollowing);
@@ -216,10 +220,10 @@ namespace Stalkiana_Console
                     resultLines.Add($"{username} stopped following {notList2.ElementAt(i)} and started following {notList1.ElementAt(i)},");
                 }
             }
-            else if (usersFollowingFile.Count < usersFollowing.Count)
+            else if (usersFollowingFile.Count < followingCount)
             {
                 Console.WriteLine($"{username} started following {usersFollowing.Count - usersFollowingFile.Count} users");
-                resultLines.Add($"{DateTime.Now}: {username} started following {usersFollowing.Count - usersFollowingFile.Count} users");
+                resultLines.Add($"{DateTime.Now}: {username} started following {usersFollowing.Count - usersFollowingFile.Count} users, following count: {followingCount}");
                 foreach (string user in usersFollowing)
                 {
                     if (!usersFollowingFile.Contains(user))
@@ -229,10 +233,10 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else if (usersFollowingFile.Count > usersFollowing.Count)
+            else if (usersFollowingFile.Count > followingCount)
             {
                 Console.WriteLine($"{username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
-                resultLines.Add($"{DateTime.Now}: {username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
+                resultLines.Add($"{DateTime.Now}: {username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users, following count: {followingCount}");
                 foreach (string user in usersFollowingFile)
                 {
                     if (!usersFollowing.Contains(user))
@@ -248,10 +252,10 @@ namespace Stalkiana_Console
                 return;
             }
 
-            if (usersFollowersFile.Count == usersFollowers.Count)
+            if (usersFollowersFile.Count == followerCount)
             {
-                Console.WriteLine($"\n{username} has the same number of followers");
-                resultLines.Add($"{DateTime.Now}: {username} has the same number of followers");
+                Console.WriteLine($"{username} has the same number of followers");
+                resultLines.Add($"{DateTime.Now}: {username} has the same number of followers: {followerCount}");
 
                 var notList1 = usersFollowers.Except(usersFollowersFile);
                 var notList2 = usersFollowersFile.Except(usersFollowers);
@@ -268,10 +272,10 @@ namespace Stalkiana_Console
                     resultLines.Add($"{notList2.ElementAt(i)} stopped following {username} and {notList1.ElementAt(i)} started following {username},");
                 }
             }
-            else if (usersFollowersFile.Count < usersFollowers.Count)
+            else if (usersFollowersFile.Count < followerCount)
             {
-                Console.WriteLine($"\n{usersFollowers.Count - usersFollowersFile.Count} users started following {username}");
-                resultLines.Add($"{DateTime.Now}: {usersFollowers.Count - usersFollowersFile.Count} users started following {username}");
+                Console.WriteLine($"{usersFollowers.Count - usersFollowersFile.Count} users started following {username}");
+                resultLines.Add($"{DateTime.Now}: {usersFollowers.Count - usersFollowersFile.Count} users started following {username}, follower count: {followerCount}");
                 foreach (string user in usersFollowers)
                 {
                     if (!usersFollowersFile.Contains(user))
@@ -281,10 +285,10 @@ namespace Stalkiana_Console
                     }
                 }
             }
-            else if (usersFollowersFile.Count > usersFollowers.Count)
+            else if (usersFollowersFile.Count > followerCount)
             {
-                Console.WriteLine($"\n{usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
-                resultLines.Add($"{DateTime.Now}: {usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
+                Console.WriteLine($"{usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
+                resultLines.Add($"{DateTime.Now}: {usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}, follower count: {followerCount}");
                 foreach (string user in usersFollowersFile)
                 {
                     if (!usersFollowers.Contains(user))
