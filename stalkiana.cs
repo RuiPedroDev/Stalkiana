@@ -195,11 +195,6 @@ namespace Stalkiana_Console
 
             Console.WriteLine("\nVerifying...\n");
 
-            if(usersFollowers.Count != followerCount || usersFollowing.Count != followingCount){
-                Console.WriteLine("Something went wrong.");
-                return;
-            }
-
             if (usersFollowingFile.Count == followingCount)
             {
                 Console.WriteLine($"{username} has the same number of followings");
