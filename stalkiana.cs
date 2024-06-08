@@ -7,13 +7,14 @@ Do not use the tool multiple times per day or you might get flagged by instagram
 using System;
 using RestSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Stalkiana_Console
 {
     internal class Program
     {
         public static RestClient client = new RestClient("https://www.instagram.com");
-        static void Main(string[] args)
+        static void displayStartingScreen()
         {
             Console.Clear();
             Console.WriteLine("Welcome to Stalkiana the instagram stalking tool\n");
@@ -26,280 +27,429 @@ namespace Stalkiana_Console
 /_______  / |__|  (____  /|____/|__|_ \|__|(____  /|___|  /(____  /
         \/             \/            \/         \/      \/      \/ ");
             Console.ResetColor();
-            Console.Write("\nThis is a tool used for stalking an instagram user\n");
-            int minTime = 1000;
-            int maxTime = 2000;
-            var rand = new Random();
-            Console.Write("\nPlease input the username to stalk: ");
-            string username = Console.ReadLine()!;
-            string input;
+            Console.Write("\nThis is a tool used for stalking an Instagram user\n");
+        }
+        static string getUsername()
+        {
+            string username;
+            do
+            {
+                Console.Write("\nPlease input the username to stalk: ");
+                username = Console.ReadLine()!;
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    Console.WriteLine("Username cannot be empty. Please enter a valid username.");
+                }
+            } while (string.IsNullOrWhiteSpace(username));
+            return username;
+        }
+        static string getOption()
+        {
+            string option;
             do
             {
                 Console.WriteLine("\n1- Download Profile Picture");
                 Console.WriteLine("2- Get Followers/Following\n");
                 Console.Write("\nChoose what you want to do: ");
-                input = Console.ReadLine()!;
-            } while (input != "1" && input != "2");
-            if (input == "1")
+                option = Console.ReadLine()!;
+                if (string.IsNullOrWhiteSpace(option))
+                {
+                    Console.WriteLine("Option cannot be empty. Please enter a valid option (1 or 2).");
+                }
+            } while (option != "1" && option != "2");
+            return option;
+        }
+
+        static Dictionary<string, string>? getFollowersList(string userPK, string cookie, int minTime, int maxTime)
+        {
+            var list = new Dictionary<string, string>();
+            bool hasNext = true;
+            string? after = null!;
+            while (hasNext)
             {
-                downloadProfileImage(username);
-                return;
+                var request = new RestRequest("/graphql/query/", Method.Get);
+                request.AddQueryParameter("query_hash", "c76146de99bb02f6415203be841dd25a");
+                request.AddQueryParameter("id", userPK);
+                request.AddQueryParameter("include_reel", "true");
+                request.AddQueryParameter("fetch_mutual", "true");
+                request.AddQueryParameter("first", "50");
+                request.AddQueryParameter("after", after);
+                request.AddHeader("cookie", cookie);
+                var response = client.Execute(request);
+                if (response.IsSuccessful)
+                {
+                    try
+                    {
+                        dynamic? obj = JsonConvert.DeserializeObject(response.Content!);
+                        hasNext = obj!.data.user.edge_followed_by.page_info.has_next_page;
+                        after = obj.data.user.edge_followed_by.page_info.end_cursor;
+                        foreach (dynamic follower in obj.data.user.edge_followed_by.edges)
+                        {
+                            list[(string)follower.node.id] = (string)follower.node.username;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine($"Error fetching followings: {e.Message}");
+                        return null;
+                    }
+                    sleepRandom(minTime, maxTime);
+                }
+                else
+                {
+                    Console.WriteLine($"Error in fetching followers: {response.StatusCode}");
+                    return null;
+                }
             }
-            Console.WriteLine("\nThis only works on public instagram accounts or in private accounts that you are following\n\n");
-            Console.Write("Please input the full instagram cookie: ");
-            string cookie = Console.ReadLine()!;
-            string followingsFileName = $"{username}/{username}_followings.txt";
-            string followersFileName = $"{username}/{username}_followers.txt";
-            string resultFileName = $"{username}/result.txt";
-            string userId;
+            return list;
+        }
 
-            int followerCount;
-            int followingCount;
+        static Dictionary<string, string>? getFollowingList(string userPK, string cookie, int minTime, int maxTime)
+        {
+            var list = new Dictionary<string, string>();
+            bool hasNext = true;
+            string? after = null!;
+            while (hasNext)
+            {
+                var request = new RestRequest("/graphql/query/", Method.Get);
+                request.AddQueryParameter("query_hash", "d04b0a864b4b54837c0d870b0e77e076");
+                request.AddQueryParameter("id", userPK);
+                request.AddQueryParameter("include_reel", "true");
+                request.AddQueryParameter("fetch_mutual", "true");
+                request.AddQueryParameter("first", "50");
+                request.AddQueryParameter("after", after);
+                request.AddHeader("cookie", cookie);
+                var response = client.Execute(request);
+                if (response.IsSuccessful)
+                {
+                    try
+                    {
+                        dynamic? obj = JsonConvert.DeserializeObject(response.Content!);
+                        hasNext = obj!.data.user.edge_follow.page_info.has_next_page;
+                        after = obj.data.user.edge_follow.page_info.end_cursor;
+                        foreach (dynamic following in obj.data.user.edge_follow.edges)
+                        {
+                            list[(string)following.node.id] = (string)following.node.username;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine($"Error fetching followings: {e.Message}");
+                        return null;
+                    }
+                    sleepRandom(minTime, maxTime);
+                }
+                else
+                {
+                    Console.WriteLine($"Error fetching followings: {response.StatusCode}");
+                    return null;
+                }
+            }
+            return list;
+        }
 
-            var usersFollowing = new List<string>();
-            var usersFollowers = new List<string>();
-            var usersFollowingFile = new List<string>();
-            var usersFollowersFile = new List<string>();
-            var resultLines = new List<string>();
+        static string getCookie()
+        {
+            string cookie;
+            do
+            {
+                Console.Write("Please input the full instagram cookie: ");
+                cookie = Console.ReadLine()!;
+                if (string.IsNullOrWhiteSpace(cookie))
+                {
+                    Console.WriteLine("Cookie cannot be empty. Please enter a valid cookie.");
+                }
+            } while (string.IsNullOrWhiteSpace(cookie));
+            return cookie;
+        }
 
-
-            //search the user and get the ID
-            var request1 = new RestRequest("api/v1/web/search/topsearch/", Method.Get);
-            request1.AddHeader("cookie", cookie);
-            request1.AddQueryParameter("query", username);
-            request1.AddQueryParameter("context", "blended");
-            request1.AddQueryParameter("include_reel", "false");
-            request1.AddQueryParameter("search_surface", "web_top_search");
-            var response1 = client.Execute(request1);
+        static string? getUserPK(string cookie, string username)
+        {
+            string userPK;
+            var request = new RestRequest("api/v1/web/search/topsearch/", Method.Get);
+            request.AddHeader("cookie", cookie);
+            request.AddQueryParameter("query", username);
+            request.AddQueryParameter("context", "blended");
+            request.AddQueryParameter("include_reel", "false");
+            request.AddQueryParameter("search_surface", "web_top_search");
+            var response1 = client.Execute(request);
             if (response1.IsSuccessful)
             {
-                Console.WriteLine("\nFirst request completed succesfully");
+                Console.WriteLine("\nRequest to get user PK completed succesfully");
+                try
+                {
+                    dynamic? obj = JsonConvert.DeserializeObject(response1.Content!)!;
+                    userPK = obj.users[0].user.pk!;
+                    Console.WriteLine($"{username}: {userPK}\n");
+                    return userPK;
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Error: {e.Message}");
+                    return null;
+                }
             }
-            else { Console.WriteLine($"\nError in request1 (maybe cookie is not correct): {response1.StatusCode}"); return; }
-
-            Thread.Sleep(rand.Next(minTime, maxTime));
-
-            //get the follower and following count of the user
-            var request2 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
-            request2.AddQueryParameter("username", username);
-            request2.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
-            var response2 = client.Execute(request2);
-            Thread.Sleep(rand.Next(minTime, maxTime));
-
-            if (response2.IsSuccessful)
+            else
             {
-                Console.WriteLine("Second request completed succesfully\n");
+                Console.Error.WriteLine($"\nError in request to get user PK (maybe cookie is invalid): {response1.StatusCode}");
+                return null;
             }
-            else { Console.WriteLine($"Error in request2: {response2.StatusCode}"); return; }
+        }
 
-            if (File.Exists(followingsFileName) && File.Exists(followersFileName))
+        static int getFollowingCount(string username)
+        {
+            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
+            request.AddQueryParameter("username", username);
+            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var response = client.Execute(request);
+            if (response.IsSuccessful)
             {
-                usersFollowingFile = File.ReadAllLines(followingsFileName).ToList();
-                usersFollowersFile = File.ReadAllLines(followersFileName).ToList();
+                try
+                {
+                    dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
+                    Console.WriteLine("Get following count request completed succesfully\n");
+                    return obj.data.user.edge_follow.count;
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Error in get following count request: {e.Message}");
+                    return -1;
+                }
             }
+            else
+            {
+                Console.Error.WriteLine($"Error in get following count request: {response.StatusCode}");
+                return -1;
+            }
+        }
+        static int getFollowerCount(string username)
+        {
+            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
+            request.AddQueryParameter("username", username);
+            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var response = client.Execute(request);
+            if (response.IsSuccessful)
+            {
+                try
+                {
+                    dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
+                    Console.WriteLine("Get follower count request completed succesfully\n");
+                    return obj.data.user.edge_followed_by.count;
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine($"Error in get follower count request: {e.Message}");
+                    return -1;
+                }
+            }
+            else
+            {
+                Console.Error.WriteLine($"Error in get follower count request: {response.StatusCode}");
+                return -1;
+            }
+        }
+
+        static Dictionary<string, string>? getDataFromFile(string filename)
+        {
+            string jsonString = File.ReadAllText(filename);
 
             try
             {
-                dynamic? obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
-                dynamic? obj2 = JsonConvert.DeserializeObject(response2.Content!)!;
-                userId = obj1.users[0].user.pk!;
-                followerCount = obj2.data.user.edge_followed_by.count;
-                followingCount = obj2.data.user.edge_follow.count;
-                Console.WriteLine($"{username}: {userId}\n");
-                Console.WriteLine($"Previous follower count: {usersFollowersFile.Count}, previous following count: {usersFollowingFile.Count}");
-                Console.WriteLine($"Current follower count:  {followerCount}, current following count:  {followingCount}\n");
-                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
+                var userList = JsonConvert.DeserializeObject<List<JObject>>(jsonString);
+                var dictionary = new Dictionary<string, string>();
+
+                foreach (JObject user in userList!)
+                {
+                    var userPK = user["userPK"]!.ToString();
+                    var username = user["username"]!.ToString();
+                    dictionary[userPK] = username;
+                }
+
+                return dictionary;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error: {e.Message}");
-                return;
+                Console.Error.WriteLine("Error: " + ex.Message);
+                return null;
             }
+        }
 
-            Console.WriteLine("Getting Following...");
+        static void sleepRandom(int minTime, int maxTime)
+        {
+            Random rand = new Random();
+            Thread.Sleep(rand.Next(minTime, maxTime));
+        }
 
-            //get the list of all the following
-            bool has_next = true;
-            string? after = null!;
-            while (has_next)
+        static string dictionaryToJsonString(Dictionary<string, string> list)
+        {
+            var jsonArray = list.Select(kv => new { userPK = kv.Key, username = kv.Value }).ToArray();
+            return JsonConvert.SerializeObject(jsonArray);
+        }
+
+        static void Main(string[] args)
+        {
+            var usersFollowing = new Dictionary<string, string>();
+            var usersFollowers = new Dictionary<string, string>();
+
+            var usersFollowingFile = new Dictionary<string, string>();
+            var usersFollowersFile = new Dictionary<string, string>();
+            var resultLines = new List<string>();
+
+            const int minTime = 1000;
+            const int maxTime = 2000;
+            string username;
+            string option;
+            string cookie;
+            string? userPK;
+
+            int userFollowersCount;
+            int userFollowingCount;
+
+            displayStartingScreen();
+            username = getUsername();
+            option = getOption();
+
+            string followingFileName = $"{username}/{username}_followings.json";
+            string followersFileName = $"{username}/{username}_followers.json";
+            string resultFileName = $"{username}/result.txt";
+
+            if (option == "1")
             {
-                var request3 = new RestRequest("/graphql/query/", Method.Get);
-                request3.AddQueryParameter("query_hash", "d04b0a864b4b54837c0d870b0e77e076");
-                request3.AddQueryParameter("id", userId);
-                request3.AddQueryParameter("include_reel", "true");
-                request3.AddQueryParameter("fetch_mutual", "true");
-                request3.AddQueryParameter("first", "50");
-                request3.AddQueryParameter("after", after);
-                request3.AddHeader("cookie", cookie);
-                var response3 = client.Execute(request3);
-                if (response3.IsSuccessful)
-                {
-                    dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!);
-                    has_next = obj3!.data.user.edge_follow.page_info.has_next_page;
-                    after = obj3.data.user.edge_follow.page_info.end_cursor;
-                    foreach (dynamic following in obj3.data.user.edge_follow.edges)
-                    {
-                        usersFollowing.Add((string)following.node.username);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Error in fetching followings: {response3.StatusCode}");
-                    return;
-                }
-                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
-            }
-
-            Console.WriteLine("Getting Followers...");
-
-            //get list of all the followers
-            has_next = true;
-            after = null!;
-            while (has_next)
-            {
-                var request3 = new RestRequest("/graphql/query/", Method.Get);
-                request3.AddQueryParameter("query_hash", "c76146de99bb02f6415203be841dd25a");
-                request3.AddQueryParameter("id", userId);
-                request3.AddQueryParameter("include_reel", "true");
-                request3.AddQueryParameter("fetch_mutual", "true");
-                request3.AddQueryParameter("first", "50");
-                request3.AddQueryParameter("after", after);
-                request3.AddHeader("cookie", cookie);
-                var response3 = client.Execute(request3);
-                if (response3.IsSuccessful)
-                {
-                    dynamic? obj3 = JsonConvert.DeserializeObject(response3.Content!);
-                    has_next = obj3!.data.user.edge_followed_by.page_info.has_next_page;
-                    after = obj3.data.user.edge_followed_by.page_info.end_cursor;
-                    foreach (dynamic follower in obj3.data.user.edge_followed_by.edges)
-                    {
-                        usersFollowers.Add((string)follower.node.username);
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Error in fetching followers: {response3.StatusCode}");
-                    return;
-                }
-                Thread.Sleep(rand.Next(minTime, maxTime)); //This lines makes it harder for instagram to flag the bot requests
+                downloadProfileImage(username);
             }
 
-            Console.WriteLine();
-            client.Dispose();
-
-            Directory.CreateDirectory(username);
-
-            //save the lists to the file
-            File.WriteAllLines(followingsFileName, usersFollowing);
-            File.WriteAllLines(followersFileName, usersFollowers);
-
-            Console.WriteLine("\nVerifying...\n");
-
-            if (usersFollowingFile.Count == followingCount)
+            else if (option == "2")
             {
-                Console.WriteLine($"{username} has the same number of followings");
-                resultLines.Add($"{DateTime.Now}: {username} has the same number of followings: {followingCount}");
+                Console.WriteLine("\nThis only works on public instagram accounts or on private accounts that you are following\n\n");
+                cookie = getCookie();
+                sleepRandom(minTime, maxTime);
+                userPK = getUserPK(cookie, username);
+                sleepRandom(minTime, maxTime);
 
-                var notList1 = usersFollowing.Except(usersFollowingFile);
-                var notList2 = usersFollowingFile.Except(usersFollowing);
-
-                if (notList1.Count() != notList2.Count())
+                if (userPK == null)
                 {
-                    Console.WriteLine("Something went wrong.");
+                    Console.Error.WriteLine("Something went wrong");
                     return;
                 }
 
-                for (int i = 0; i < notList1.Count(); i++)
+                userFollowersCount = getFollowerCount(username);
+                sleepRandom(minTime, maxTime);
+                userFollowingCount = getFollowingCount(username);
+
+                if (userFollowersCount < 1 || userFollowingCount < 1)
                 {
-                    Console.WriteLine($"{username} stopped following {notList2.ElementAt(i)} and started following {notList1.ElementAt(i)},");
-                    resultLines.Add($"{username} stopped following {notList2.ElementAt(i)} and started following {notList1.ElementAt(i)},");
+                    Console.Error.WriteLine("Something went wrong");
+                    return;
                 }
-            }
-            else if (usersFollowingFile.Count < followingCount)
-            {
-                Console.WriteLine($"{username} started following {usersFollowing.Count - usersFollowingFile.Count} users");
-                resultLines.Add($"{DateTime.Now}: {username} started following {usersFollowing.Count - usersFollowingFile.Count} users, following count: {followingCount}");
-                foreach (string user in usersFollowing)
+
+                if (File.Exists(followingFileName) && File.Exists(followersFileName))
                 {
-                    if (!usersFollowingFile.Contains(user))
+                    usersFollowingFile = getDataFromFile(followingFileName);
+                    sleepRandom(minTime, maxTime);
+                    usersFollowersFile = getDataFromFile(followersFileName);
+                }
+
+                Console.WriteLine($"{username}: {userPK}\n");
+                Console.WriteLine($"Previous follower count: {usersFollowersFile!.Count}, previous following count: {usersFollowingFile!.Count}");
+                Console.WriteLine($"Current follower count:  {userFollowersCount}, current following count:  {userFollowingCount}\n");
+
+                Console.WriteLine("Getting Following...");
+                usersFollowing = getFollowingList(userPK, cookie, minTime, maxTime);
+                if (usersFollowing == null)
+                {
+                    Console.Error.WriteLine("Something went wrong");
+                    return;
+                }
+
+                Console.WriteLine("Getting Followers...");
+                usersFollowers = getFollowersList(userPK, cookie, minTime, maxTime);
+                if (usersFollowers == null)
+                {
+                    Console.Error.WriteLine("Something went wrong");
+                    return;
+                }
+
+                client.Dispose();
+                Directory.CreateDirectory(username);
+
+                File.WriteAllText(followersFileName, dictionaryToJsonString(usersFollowers));
+                File.WriteAllText(followingFileName, dictionaryToJsonString(usersFollowing));
+
+                Console.WriteLine("\n\nVerifying...\n");
+
+
+                resultLines.Add($"{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
+                Console.WriteLine($"\nCurrent Follower Count: {usersFollowers.Count}, Current Following Count: {usersFollowing.Count}");
+                resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
+                Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
+
+                foreach (var user in usersFollowingFile)
+                {
+                    if (!usersFollowing.ContainsKey(user.Key))
                     {
-                        Console.WriteLine(user);
-                        resultLines.Add($"{user}");
+                        resultLines.Add($"{username} stopped following {user.Value}");
+                        Console.WriteLine($"{username} stopped following {user.Value}");
                     }
                 }
-            }
-            else if (usersFollowingFile.Count > followingCount)
-            {
-                Console.WriteLine($"{username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users");
-                resultLines.Add($"{DateTime.Now}: {username} stopped following {usersFollowingFile.Count - usersFollowing.Count} users, following count: {followingCount}");
-                foreach (string user in usersFollowingFile)
+
+                foreach (var user in usersFollowing)
                 {
-                    if (!usersFollowing.Contains(user))
+                    if (!usersFollowingFile.ContainsKey(user.Key))
                     {
-                        Console.WriteLine(user);
-                        resultLines.Add($"{user}");
+                        resultLines.Add($"{username} started following {user.Value}");
+                        Console.WriteLine($"{username} started following {user.Value}");
                     }
                 }
+
+                resultLines.Add($"{DateTime.Now}: {(usersFollowers.Count < usersFollowersFile.Count ? usersFollowersFile.Count - usersFollowers.Count : usersFollowers.Count - usersFollowersFile.Count)} users {(usersFollowers.Count < usersFollowersFile.Count ? "stopped" : "started")} following {username}");
+                Console.WriteLine($"\n{(usersFollowers.Count < usersFollowersFile.Count ? usersFollowersFile.Count - usersFollowers.Count : usersFollowers.Count - usersFollowersFile.Count)} users {(usersFollowers.Count < usersFollowersFile.Count ? "stopped" : "started")} following {username}");
+
+                foreach (var user in usersFollowersFile)
+                {
+                    if (!usersFollowers.ContainsKey(user.Key))
+                    {
+                        resultLines.Add($"{user.Value} stopped following {username}");
+                        Console.WriteLine($"{user.Value} stopped following {username}");
+                    }
+                }
+
+                foreach (var user in usersFollowers)
+                {
+                    if (!usersFollowersFile.ContainsKey(user.Key))
+                    {
+                        resultLines.Add($"{user.Value} started following {username}");
+                        Console.WriteLine($"{user.Value} started following {username}");
+                    }
+                }
+
+                resultLines.Add($"{DateTime.Now}: Name changes");
+                Console.WriteLine("\nName changes");
+
+                foreach (var user in usersFollowersFile)
+                {
+                    if (usersFollowersFile.ContainsKey(user.Key) && usersFollowers[user.Key] != usersFollowersFile[user.Key])
+                    {
+                        resultLines.Add($"{user.Value} changed their username to {usersFollowers[user.Key]}");
+                        Console.WriteLine($"{user.Value} changed their username to {usersFollowers[user.Key]}");
+                    }
+                }
+
+                foreach (var user in usersFollowingFile)
+                {
+                    if (usersFollowingFile.ContainsKey(user.Key) && usersFollowing[user.Key] != usersFollowingFile[user.Key])
+                    {
+                        resultLines.Add($"{user.Value} changed their username to {usersFollowing[user.Key]}");
+                        Console.WriteLine($"{user.Value} changed their username to {usersFollowing[user.Key]}");
+                    }
+                }
+
+                File.AppendAllLines(resultFileName, resultLines);
+                Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
             }
             else
             {
-                Console.WriteLine("Something went wrong.");
                 return;
             }
-
-            if (usersFollowersFile.Count == followerCount)
-            {
-                Console.WriteLine($"{username} has the same number of followers");
-                resultLines.Add($"{DateTime.Now}: {username} has the same number of followers: {followerCount}");
-
-                var notList1 = usersFollowers.Except(usersFollowersFile);
-                var notList2 = usersFollowersFile.Except(usersFollowers);
-
-                if (notList1.Count() != notList2.Count())
-                {
-                    Console.WriteLine("Something went wrong.");
-                    return;
-                }
-
-                for (int i = 0; i < notList1.Count(); i++)
-                {
-                    Console.WriteLine($"{notList2.ElementAt(i)} stopped following {username} and {notList1.ElementAt(i)} started following {username},");
-                    resultLines.Add($"{notList2.ElementAt(i)} stopped following {username} and {notList1.ElementAt(i)} started following {username},");
-                }
-            }
-            else if (usersFollowersFile.Count < followerCount)
-            {
-                Console.WriteLine($"{usersFollowers.Count - usersFollowersFile.Count} users started following {username}");
-                resultLines.Add($"{DateTime.Now}: {usersFollowers.Count - usersFollowersFile.Count} users started following {username}, follower count: {followerCount}");
-                foreach (string user in usersFollowers)
-                {
-                    if (!usersFollowersFile.Contains(user))
-                    {
-                        Console.WriteLine(user);
-                        resultLines.Add($"{user}");
-                    }
-                }
-            }
-            else if (usersFollowersFile.Count > followerCount)
-            {
-                Console.WriteLine($"{usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}");
-                resultLines.Add($"{DateTime.Now}: {usersFollowersFile.Count - usersFollowers.Count} users stopped following {username}, follower count: {followerCount}");
-                foreach (string user in usersFollowersFile)
-                {
-                    if (!usersFollowers.Contains(user))
-                    {
-                        Console.WriteLine(user);
-                        resultLines.Add($"{user}");
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("Something went wrong.");
-                return;
-            }
-            File.AppendAllLines(resultFileName, resultLines);
-            Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
         }
 
         static void downloadProfileImage(string username)
