@@ -23,20 +23,20 @@ A simple command-line tool for stalking an instagram account.
 ## Prerequisites
 
 - .NET Core SDK installed on your machine;
-- Instagram credentials (cookie);
+- Instagram credentials (cookies);
 
 ## Installation
 
 1. Clone this repository to your local machine:
 
    ```shell
-   git clone https://github.com/yourusername/instagram-console-tool.git
+   git clone https://github.com/RuiPedroDev/Stalkiana
    ```
 
 2. Navigate to the project directory:
 
     ```shell
-    cd stalkiana
+    cd Stalkiana
     ```
 
 3. Run the tool:
@@ -54,16 +54,16 @@ This tool has two main functions:
 2- Tracking followers/followings by keeping a local list of the followers/followings of an instagram user and then upon execution check if the follower/following count has changed compared to the last execution time, if it changed it determines the difference by comparing the new list with the old list, when the tool finishes execution, it logs the results into a results.txt file.
 
 Some parts of this tool require the instagram cookie in order to work.
-If you don't know how to get the cookie, here are the steps to do it:
+If you don't know how to get the cookie, here are the steps to get it:
 
 
-1. Launch your browser and log in to Instagram.
+1. Launch your browser and open the inspect element panel (CTRL + SHIFT + C or F12).
 
 
-2. Go to inspect element (CTRL + SHIFT + C or F12).
+2. Go to Intagram and Log in.
 
 
-3. Go to the network tab and type "graphql" on the filter at the top and click on any of the requests.
+3. Once Logged in, go to the network tab and type "graphql" on the filter at the top and click on any of the requests that appear bellow.
 
 
 4. Go to request headers and search for the cookie, triple click the value (mid=...) and copy it.

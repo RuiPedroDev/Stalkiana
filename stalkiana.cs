@@ -64,7 +64,7 @@ namespace Stalkiana_Console
         {
             var list = new Dictionary<string, string>();
             bool hasNext = true;
-            string? after = null!;
+            string? after = null;
             while (hasNext)
             {
                 var request = new RestRequest("/graphql/query/", Method.Get);
@@ -108,7 +108,7 @@ namespace Stalkiana_Console
         {
             var list = new Dictionary<string, string>();
             bool hasNext = true;
-            string? after = null!;
+            string? after = null;
             while (hasNext)
             {
                 var request = new RestRequest("/graphql/query/", Method.Get);
@@ -328,7 +328,7 @@ namespace Stalkiana_Console
 
                 if (userPK == null)
                 {
-                    Console.Error.WriteLine("Something went wrong");
+                    Console.Error.WriteLine("Something went wrong.");
                     return;
                 }
 
@@ -338,7 +338,7 @@ namespace Stalkiana_Console
 
                 if (userFollowersCount < 1 || userFollowingCount < 1)
                 {
-                    Console.Error.WriteLine("Something went wrong");
+                    Console.Error.WriteLine("Something went wrong.");
                     return;
                 }
 
@@ -357,7 +357,7 @@ namespace Stalkiana_Console
                 usersFollowing = getFollowingList(userPK, cookie, minTime, maxTime);
                 if (usersFollowing == null)
                 {
-                    Console.Error.WriteLine("Something went wrong");
+                    Console.Error.WriteLine("Something went wrong.");
                     return;
                 }
 
@@ -365,7 +365,7 @@ namespace Stalkiana_Console
                 usersFollowers = getFollowersList(userPK, cookie, minTime, maxTime);
                 if (usersFollowers == null)
                 {
-                    Console.Error.WriteLine("Something went wrong");
+                    Console.Error.WriteLine("Something went wrong.");
                     return;
                 }
 
@@ -379,7 +379,7 @@ namespace Stalkiana_Console
 
 
                 resultLines.Add($"{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
-                Console.WriteLine($"\nCurrent Follower Count: {usersFollowers.Count}, Current Following Count: {usersFollowing.Count}");
+                Console.WriteLine($"\nCurrent Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
                 resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
                 Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
 
@@ -454,18 +454,18 @@ namespace Stalkiana_Console
 
         static void downloadProfileImage(string username)
         {
-            var request1 = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
-            request1.AddQueryParameter("username", username);
-            request1.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
-            var response1 = client.Execute(request1);
-            if (!response1.IsSuccessful)
+            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
+            request.AddQueryParameter("username", username);
+            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var response = client.Execute(request);
+            if (!response.IsSuccessful)
             {
-                Console.WriteLine($"Error in request1: {response1.StatusCode}");
+                Console.WriteLine($"Error in request1: {response.StatusCode}");
                 return;
             }
             try
             {
-                dynamic obj1 = JsonConvert.DeserializeObject(response1.Content!)!;
+                dynamic obj1 = JsonConvert.DeserializeObject(response.Content!)!;
                 string imageUrl = obj1.data.user.profile_pic_url_hd.ToString();
                 byte[] fileBytes = client.DownloadData(new RestRequest(imageUrl, Method.Get))!;
 
