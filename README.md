@@ -53,7 +53,7 @@ This tool has two main functions:
 
 2- Tracking followers/followings by keeping a local list of the followers/followings of an instagram user and then upon execution check if the follower/following count has changed compared to the last execution time, if it changed it determines the difference by comparing the new list with the old list, when the tool finishes execution, it logs the results into a results.txt file.
 
-Some parts of this tool require the instagram cookie in order to work.
+This tool requires the instagram cookie in order to work.
 If you don't know how to get the cookie, here are the steps to get it:
 
 

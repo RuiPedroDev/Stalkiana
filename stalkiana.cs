@@ -50,7 +50,7 @@ namespace Stalkiana_Console
             {
                 Console.WriteLine("\n1- Download Profile Picture");
                 Console.WriteLine("2- Get Followers/Following\n");
-                Console.Write("\nChoose what you want to do: ");
+                Console.Write("Choose what you want to do: ");
                 option = Console.ReadLine()!;
                 if (string.IsNullOrWhiteSpace(option))
                 {
@@ -196,19 +196,20 @@ namespace Stalkiana_Console
             }
         }
 
-        static int getFollowingCount(string username)
+        static int getFollowingCount(string userPK)
         {
-            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
-            request.AddQueryParameter("username", username);
-            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var request = new RestRequest("/graphql/query/", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddHeader("sec-fetch-site", "same-origin");
+            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7603613946386817", "application/x-www-form-urlencoded");
             var response = client.Execute(request);
             if (response.IsSuccessful)
             {
                 try
                 {
                     dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
-                    Console.WriteLine("Get following count request completed succesfully\n");
-                    return obj.data.user.edge_follow.count;
+                    Console.WriteLine("Get following count request completed succesfully");
+                    return obj.data.user.following_count;
                 }
                 catch (Exception e)
                 {
@@ -222,11 +223,12 @@ namespace Stalkiana_Console
                 return -1;
             }
         }
-        static int getFollowerCount(string username)
+        static int getFollowerCount(string userPK)
         {
-            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
-            request.AddQueryParameter("username", username);
-            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var request = new RestRequest("/graphql/query/", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddHeader("sec-fetch-site", "same-origin");
+            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7603613946386817", "application/x-www-form-urlencoded");
             var response = client.Execute(request);
             if (response.IsSuccessful)
             {
@@ -234,7 +236,7 @@ namespace Stalkiana_Console
                 {
                     dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
                     Console.WriteLine("Get follower count request completed succesfully\n");
-                    return obj.data.user.edge_followed_by.count;
+                    return obj.data.user.follower_count;
                 }
                 catch (Exception e)
                 {
@@ -313,28 +315,29 @@ namespace Stalkiana_Console
             string followersFileName = $"{username}/{username}_followers.json";
             string resultFileName = $"{username}/result.txt";
 
+            cookie = getCookie();
+            userPK = getUserPK(cookie, username);
+
+            if (userPK == null)
+            {
+                Console.Error.WriteLine("Something went wrong.");
+                return;
+            }
+
+            sleepRandom(minTime, maxTime);
+
             if (option == "1")
             {
-                downloadProfileImage(username);
+                downloadProfileImage(username, userPK);
             }
 
             else if (option == "2")
             {
                 Console.WriteLine("\nThis only works on public instagram accounts or on private accounts that you are following\n\n");
-                cookie = getCookie();
-                sleepRandom(minTime, maxTime);
-                userPK = getUserPK(cookie, username);
-                sleepRandom(minTime, maxTime);
 
-                if (userPK == null)
-                {
-                    Console.Error.WriteLine("Something went wrong.");
-                    return;
-                }
-
-                userFollowersCount = getFollowerCount(username);
+                userFollowersCount = getFollowerCount(userPK);
                 sleepRandom(minTime, maxTime);
-                userFollowingCount = getFollowingCount(username);
+                userFollowingCount = getFollowingCount(userPK);
 
                 if (userFollowersCount < 1 || userFollowingCount < 1)
                 {
@@ -345,7 +348,6 @@ namespace Stalkiana_Console
                 if (File.Exists(followingFileName) && File.Exists(followersFileName))
                 {
                     usersFollowingFile = getDataFromFile(followingFileName);
-                    sleepRandom(minTime, maxTime);
                     usersFollowersFile = getDataFromFile(followersFileName);
                 }
 
@@ -378,10 +380,10 @@ namespace Stalkiana_Console
                 Console.WriteLine("\n\nVerifying...\n");
 
 
-                resultLines.Add($"{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
+                resultLines.Add($"\n{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
                 Console.WriteLine($"\nCurrent Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
-                resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
-                Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)}");
+                resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} user");
+                Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} user");
 
                 foreach (var user in usersFollowingFile)
                 {
@@ -452,21 +454,22 @@ namespace Stalkiana_Console
             }
         }
 
-        static void downloadProfileImage(string username)
+        static void downloadProfileImage(string username, string userPK)
         {
-            var request = new RestRequest("/api/v1/users/web_profile_info/", Method.Get);
-            request.AddQueryParameter("username", username);
-            request.AddHeader("user-agent", "Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)");
+            var request = new RestRequest("/graphql/query/", Method.Post);
+            request.AddHeader("content-type", "application/x-www-form-urlencoded");
+            request.AddHeader("sec-fetch-site", "same-origin");
+            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7603613946386817", "application/x-www-form-urlencoded");
             var response = client.Execute(request);
             if (!response.IsSuccessful)
             {
-                Console.WriteLine($"Error in request1: {response.StatusCode}");
+                Console.WriteLine($"Error in get profile image request: {response.StatusCode}");
                 return;
             }
             try
             {
-                dynamic obj1 = JsonConvert.DeserializeObject(response.Content!)!;
-                string imageUrl = obj1.data.user.profile_pic_url_hd.ToString();
+                dynamic obj = JsonConvert.DeserializeObject(response.Content!)!;
+                string imageUrl = obj.data.user.hd_profile_pic_url_info.url.ToString();
                 byte[] fileBytes = client.DownloadData(new RestRequest(imageUrl, Method.Get))!;
 
                 Directory.CreateDirectory(username);
