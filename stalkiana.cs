@@ -352,7 +352,6 @@ namespace Stalkiana_Console
                     usersFollowersFile = getDataFromFile(followersFileName);
                 }
 
-                Console.WriteLine($"{username}: {userPK}\n");
                 Console.WriteLine($"Previous follower count: {usersFollowersFile!.Count}, previous following count: {usersFollowingFile!.Count}");
                 Console.WriteLine($"Current follower count:  {userFollowersCount}, current following count:  {userFollowingCount}\n");
 
@@ -382,9 +381,8 @@ namespace Stalkiana_Console
 
 
                 resultLines.Add($"\n{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
-                Console.WriteLine($"\nCurrent Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
-                resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} user");
-                Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} user");
+                resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} users");
+                Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} users");
 
                 foreach (var user in usersFollowingFile)
                 {
@@ -430,7 +428,7 @@ namespace Stalkiana_Console
 
                 foreach (var user in usersFollowersFile)
                 {
-                    if (usersFollowersFile.ContainsKey(user.Key) && usersFollowers[user.Key] != usersFollowersFile[user.Key])
+                    if (usersFollowers.ContainsKey(user.Key) && usersFollowers[user.Key] != usersFollowersFile[user.Key])
                     {
                         resultLines.Add($"{user.Value} changed their username to {usersFollowers[user.Key]}");
                         Console.WriteLine($"{user.Value} changed their username to {usersFollowers[user.Key]}");
@@ -439,7 +437,7 @@ namespace Stalkiana_Console
 
                 foreach (var user in usersFollowingFile)
                 {
-                    if (usersFollowingFile.ContainsKey(user.Key) && usersFollowing[user.Key] != usersFollowingFile[user.Key])
+                    if (usersFollowing.ContainsKey(user.Key) && usersFollowing[user.Key] != usersFollowingFile[user.Key])
                     {
                         resultLines.Add($"{user.Value} changed their username to {usersFollowing[user.Key]}");
                         Console.WriteLine($"{user.Value} changed their username to {usersFollowing[user.Key]}");
