@@ -66,4 +66,4 @@ If you don't know how to get the cookie, here are the steps to get it:
 3. Once Logged in, go to the network tab and type "graphql" on the filter at the top and click on any of the requests that appear bellow.
 
 
-4. Go to request headers and search for the cookie, triple click the value (mid=...) and copy it.
+4. Go to request headers and search for the cookie, triple click the full value and copy it.

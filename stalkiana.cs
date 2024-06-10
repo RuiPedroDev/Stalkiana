@@ -153,7 +153,7 @@ namespace Stalkiana_Console
             string cookie;
             do
             {
-                Console.Write("Please input the full instagram cookie: ");
+                Console.Write("\nPlease input the full instagram cookie: ");
                 cookie = Console.ReadLine()!;
                 if (string.IsNullOrWhiteSpace(cookie))
                 {
@@ -172,13 +172,13 @@ namespace Stalkiana_Console
             request.AddQueryParameter("context", "blended");
             request.AddQueryParameter("include_reel", "false");
             request.AddQueryParameter("search_surface", "web_top_search");
-            var response1 = client.Execute(request);
-            if (response1.IsSuccessful)
+            var response = client.Execute(request);
+            if (response.IsSuccessful)
             {
                 Console.WriteLine("\nRequest to get user PK completed succesfully");
                 try
                 {
-                    dynamic? obj = JsonConvert.DeserializeObject(response1.Content!)!;
+                    dynamic obj = JsonConvert.DeserializeObject(response.Content!)!;
                     userPK = obj.users[0].user.pk!;
                     Console.WriteLine($"{username}: {userPK}\n");
                     return userPK;
@@ -191,7 +191,7 @@ namespace Stalkiana_Console
             }
             else
             {
-                Console.Error.WriteLine($"\nError in request to get user PK (maybe cookie is invalid): {response1.StatusCode}");
+                Console.Error.WriteLine($"\nError in request to get user PK (maybe cookie is invalid): {response.StatusCode}");
                 return null;
             }
         }
@@ -207,7 +207,7 @@ namespace Stalkiana_Console
             {
                 try
                 {
-                    dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
+                    dynamic obj = JsonConvert.DeserializeObject(response.Content!)!;
                     Console.WriteLine("Get following count request completed succesfully");
                     return obj.data.user.following_count;
                 }
@@ -234,7 +234,7 @@ namespace Stalkiana_Console
             {
                 try
                 {
-                    dynamic? obj = JsonConvert.DeserializeObject(response.Content!)!;
+                    dynamic obj = JsonConvert.DeserializeObject(response.Content!)!;
                     Console.WriteLine("Get follower count request completed succesfully\n");
                     return obj.data.user.follower_count;
                 }
@@ -329,6 +329,7 @@ namespace Stalkiana_Console
             if (option == "1")
             {
                 downloadProfileImage(username, userPK);
+                client.Dispose();
             }
 
             else if (option == "2")
@@ -448,10 +449,7 @@ namespace Stalkiana_Console
                 File.AppendAllLines(resultFileName, resultLines);
                 Console.WriteLine($"\nFinished successfully, results saved in ./{username}/results.txt");
             }
-            else
-            {
-                return;
-            }
+            return;
         }
 
         static void downloadProfileImage(string username, string userPK)
@@ -478,6 +476,10 @@ namespace Stalkiana_Console
                 {
                     Console.WriteLine($"\nThe profile picture was successfully saved in ./{filePath}");
                 }
+                else
+                {
+                    Console.WriteLine("\nThe profile picture is unchanged. No new file created.");
+                }
             }
             catch (Exception e)
             {
@@ -501,7 +503,6 @@ namespace Stalkiana_Console
 
                 if (existingFileContent.SequenceEqual(newFileContent))
                 {
-                    Console.WriteLine("\nThe profile picture is unchanged. No new file created.");
                     return null;
                 }
 
