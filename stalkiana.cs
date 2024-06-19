@@ -307,8 +307,18 @@ namespace Stalkiana_Console
             int userFollowersCount;
             int userFollowingCount;
 
+
             displayStartingScreen();
-            username = getUsername();
+
+            if (args.Length == 1)
+            {
+                username = args[0];
+            }
+            else
+            {
+                username = getUsername();
+            }
+
             option = getOption();
 
             string followingFileName = $"{username}/{username}_followings.json";
@@ -352,7 +362,7 @@ namespace Stalkiana_Console
                     usersFollowersFile = getDataFromFile(followersFileName);
                 }
 
-                Console.WriteLine($"Previous follower count: {usersFollowersFile!.Count}, previous following count: {usersFollowingFile!.Count}");
+                Console.WriteLine($"\nPrevious follower count: {usersFollowersFile!.Count}, previous following count: {usersFollowingFile!.Count}");
                 Console.WriteLine($"Current follower count:  {userFollowersCount}, current following count:  {userFollowingCount}\n");
 
                 Console.WriteLine("Getting Following...");
@@ -380,7 +390,7 @@ namespace Stalkiana_Console
                 Console.WriteLine("\n\nVerifying...\n");
 
 
-                resultLines.Add($"\n{DateTime.Now}: Current Follower count: {usersFollowers.Count}, Current Following count: {usersFollowing.Count}");
+                resultLines.Add($"\n{DateTime.Now}: Current Follower count: {userFollowersCount}, Current Following count: {userFollowingCount}");
                 resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} users");
                 Console.WriteLine($"\n{username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} users");
 
