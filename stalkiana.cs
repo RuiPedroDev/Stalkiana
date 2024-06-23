@@ -367,17 +367,19 @@ namespace Stalkiana_Console
 
                 Console.WriteLine("Getting Following...");
                 usersFollowing = getFollowingList(userPK, cookie, minTime, maxTime);
-                if (usersFollowing == null)
+
+                if (usersFollowing == null || userFollowingCount != usersFollowing.Count)
                 {
-                    Console.Error.WriteLine("Something went wrong.");
+                    Console.Error.WriteLine("Something went wrong while fetching Following.");
                     return;
                 }
 
                 Console.WriteLine("Getting Followers...");
                 usersFollowers = getFollowersList(userPK, cookie, minTime, maxTime);
-                if (usersFollowers == null)
+
+                if (usersFollowers == null || userFollowersCount != usersFollowers.Count)
                 {
-                    Console.Error.WriteLine("Something went wrong.");
+                    Console.Error.WriteLine("Something went wrong while fetching Followers.");
                     return;
                 }
 
@@ -388,7 +390,6 @@ namespace Stalkiana_Console
                 File.WriteAllText(followingFileName, dictionaryToJsonString(usersFollowing));
 
                 Console.WriteLine("\n\nVerifying...\n");
-
 
                 resultLines.Add($"\n{DateTime.Now}: Current Follower count: {userFollowersCount}, Current Following count: {userFollowingCount}");
                 resultLines.Add($"{DateTime.Now}: {username} {(usersFollowing.Count < usersFollowingFile.Count ? "stopped" : "started")} following {(usersFollowing.Count < usersFollowingFile.Count ? usersFollowingFile.Count - usersFollowing.Count : usersFollowing.Count - usersFollowingFile.Count)} users");
