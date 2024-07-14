@@ -90,7 +90,7 @@ namespace Stalkiana_Console
                     }
                     catch (Exception e)
                     {
-                        Console.Error.WriteLine($"Error fetching followings: {e.Message}");
+                        Console.Error.WriteLine($"Error fetching followers: {e.Message}");
                         return null;
                     }
                     sleepRandom(minTime, maxTime);
@@ -134,14 +134,14 @@ namespace Stalkiana_Console
                     }
                     catch (Exception e)
                     {
-                        Console.Error.WriteLine($"Error fetching followings: {e.Message}");
+                        Console.Error.WriteLine($"Error fetching following: {e.Message}");
                         return null;
                     }
                     sleepRandom(minTime, maxTime);
                 }
                 else
                 {
-                    Console.WriteLine($"Error fetching followings: {response.StatusCode}");
+                    Console.WriteLine($"Error fetching following: {response.StatusCode}");
                     return null;
                 }
             }
@@ -196,12 +196,12 @@ namespace Stalkiana_Console
             }
         }
 
-        static int getFollowingCount(string userPK)
+        static int getFollowingCount(string userPK, string cookie)
         {
             var request = new RestRequest("/graphql/query/", Method.Post);
             request.AddHeader("content-type", "application/x-www-form-urlencoded");
-            request.AddHeader("sec-fetch-site", "same-origin");
-            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7603613946386817", "application/x-www-form-urlencoded");
+            request.AddHeader("cookie", cookie);
+            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7663723823674585", "application/x-www-form-urlencoded");
             var response = client.Execute(request);
             if (response.IsSuccessful)
             {
@@ -223,12 +223,12 @@ namespace Stalkiana_Console
                 return -1;
             }
         }
-        static int getFollowerCount(string userPK)
+        static int getFollowerCount(string userPK, string cookie)
         {
             var request = new RestRequest("/graphql/query/", Method.Post);
             request.AddHeader("content-type", "application/x-www-form-urlencoded");
-            request.AddHeader("sec-fetch-site", "same-origin");
-            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7603613946386817", "application/x-www-form-urlencoded");
+            request.AddHeader("cookie", cookie);
+            request.AddBody($"variables=%7B%22id%22%3A%22{userPK}%22%2C%22render_surface%22%3A%22PROFILE%22%7D&doc_id=7663723823674585", "application/x-www-form-urlencoded");
             var response = client.Execute(request);
             if (response.IsSuccessful)
             {
@@ -298,7 +298,7 @@ namespace Stalkiana_Console
             var resultLines = new List<string>();
 
             const int minTime = 1000;
-            const int maxTime = 2000;
+            const int maxTime = 2500;
             string username;
             string option;
             string cookie;
@@ -346,9 +346,9 @@ namespace Stalkiana_Console
             {
                 Console.WriteLine("\nThis only works on public instagram accounts or on private accounts that you are following\n\n");
 
-                userFollowersCount = getFollowerCount(userPK);
+                userFollowersCount = getFollowerCount(userPK, cookie);
                 sleepRandom(minTime, maxTime);
-                userFollowingCount = getFollowingCount(userPK);
+                userFollowingCount = getFollowingCount(userPK, cookie);
 
                 if (userFollowersCount < 1 || userFollowingCount < 1)
                 {
