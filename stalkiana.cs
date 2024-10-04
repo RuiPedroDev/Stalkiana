@@ -60,7 +60,7 @@ namespace Stalkiana_Console
             return option;
         }
 
-        static Dictionary<string, string>? getFollowersList(string userPK, string cookie, int minTime, int maxTime)
+        static Dictionary<string, string>? getFollowersList(string userPK, string cookie, int minTime, int maxTime, string count)
         {
             var list = new Dictionary<string, string>();
             bool hasNext = true;
@@ -72,7 +72,7 @@ namespace Stalkiana_Console
                 request.AddQueryParameter("id", userPK);
                 request.AddQueryParameter("include_reel", "true");
                 request.AddQueryParameter("fetch_mutual", "true");
-                request.AddQueryParameter("first", "50");
+                request.AddQueryParameter("first", count);
                 request.AddQueryParameter("after", after);
                 request.AddHeader("cookie", cookie);
                 var response = client.Execute(request);
@@ -104,7 +104,7 @@ namespace Stalkiana_Console
             return list;
         }
 
-        static Dictionary<string, string>? getFollowingList(string userPK, string cookie, int minTime, int maxTime)
+        static Dictionary<string, string>? getFollowingList(string userPK, string cookie, int minTime, int maxTime, string count)
         {
             var list = new Dictionary<string, string>();
             bool hasNext = true;
@@ -116,7 +116,7 @@ namespace Stalkiana_Console
                 request.AddQueryParameter("id", userPK);
                 request.AddQueryParameter("include_reel", "true");
                 request.AddQueryParameter("fetch_mutual", "true");
-                request.AddQueryParameter("first", "50");
+                request.AddQueryParameter("first", count);
                 request.AddQueryParameter("after", after);
                 request.AddHeader("cookie", cookie);
                 var response = client.Execute(request);
@@ -302,6 +302,7 @@ namespace Stalkiana_Console
             string username;
             string option;
             string cookie;
+            string count = "50";
             string? userPK;
 
             int userFollowersCount;
@@ -314,11 +315,17 @@ namespace Stalkiana_Console
             {
                 username = args[0];
             }
+            else if(args.Length == 2){
+                username = args[0];
+                if(Int32.TryParse(args[1], out int _out) && _out >= 1){
+                    count = args[1];
+                }
+            }
             else
             {
                 username = getUsername();
             }
-
+            
             option = getOption();
 
             string followingFileName = $"{username}/{username}_followings.json";
@@ -366,7 +373,7 @@ namespace Stalkiana_Console
                 Console.WriteLine($"Current follower count:  {userFollowersCount}, current following count:  {userFollowingCount}\n");
 
                 Console.WriteLine("Getting Following...");
-                usersFollowing = getFollowingList(userPK, cookie, minTime, maxTime);
+                usersFollowing = getFollowingList(userPK, cookie, minTime, maxTime, count);
 
                 if (usersFollowing == null || userFollowingCount != usersFollowing.Count)
                 {
@@ -375,7 +382,7 @@ namespace Stalkiana_Console
                 }
 
                 Console.WriteLine("Getting Followers...");
-                usersFollowers = getFollowersList(userPK, cookie, minTime, maxTime);
+                usersFollowers = getFollowersList(userPK, cookie, minTime, maxTime, count);
 
                 if (usersFollowers == null || userFollowersCount != usersFollowers.Count)
                 {
